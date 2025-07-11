@@ -7,23 +7,27 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
+    <!-- 메인 컨텐츠 -->
+    <div class="container" id="main-container">
         <!-- 사이드바 -->
         <div class="sidebar">
             <h2>건물 선택</h2>
             <div id="building-buttons" class="building-buttons">
                 <!-- 건물 버튼들이 여기에 동적으로 생성됩니다 -->
             </div>
-            
             <div id="floor-buttons" class="floor-buttons" style="display: none;">
                 <h3>층 선택</h3>
+                <div id="current-floor-label" class="current-floor-label"></div>
                 <div id="floor-list">
                     <!-- 층 버튼들이 여기에 동적으로 생성됩니다 -->
                 </div>
                 <button id="back-to-buildings" class="back-button">← 건물 선택으로</button>
             </div>
+            <!-- 로그인 버튼 (비로그인 사용자용) -->
+            <div id="login-button-container" style="margin-top: auto; padding-top: 20px;">
+                <button onclick="window.location.href='/login'" class="login-sidebar-button">로그인 / 회원가입</button>
+            </div>
         </div>
-
         <!-- 메인 지도 영역 -->
         <div class="main-content">
             <div class="map-container">
@@ -33,14 +37,12 @@
                     </div>
                 </div>
             </div>
-            
             <div class="info-panel">
                 <h3 id="current-location">현재 위치: 전체 캠퍼스</h3>
                 <p id="location-description">학교 전체 평면도를 확인할 수 있습니다.</p>
             </div>
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html> 

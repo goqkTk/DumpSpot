@@ -2,6 +2,7 @@
 let buildings = [];
 let currentBuilding = null;
 let currentFloor = 1;
+let currentUser = null;
 
 // DOM 요소들
 const buildingButtons = document.getElementById('building-buttons');
@@ -16,6 +17,7 @@ const locationDescription = document.getElementById('location-description');
 document.addEventListener('DOMContentLoaded', function() {
     loadBuildings();
     setupEventListeners();
+    checkLoginStatus();
 });
 
 // 이벤트 리스너 설정
@@ -72,8 +74,10 @@ function selectBuilding(building) {
 // 층 선택 UI 표시
 function showFloorSelection(totalFloors) {
     buildingButtons.style.display = 'none';
-    floorButtons.style.display = 'block';
-    
+    floorButtons.style.display = 'flex';
+    // 건물 이름 + 1층 표시
+    const label = document.getElementById('current-floor-label');
+    label.textContent = currentBuilding ? currentBuilding.name + ' 1층' : '';
     // 층 버튼 생성
     floorList.innerHTML = '';
     for (let i = 1; i <= totalFloors; i++) {
@@ -81,33 +85,28 @@ function showFloorSelection(totalFloors) {
         button.className = 'floor-button';
         button.textContent = `${i}층`;
         button.dataset.floor = i;
-        
         if (i === 1) {
             button.classList.add('active');
         }
-        
-        button.addEventListener('click', () => selectFloor(i));
+        button.addEventListener('click', () => selectFloor(i, button));
         floorList.appendChild(button);
     }
 }
 
-// 층 선택
-function selectFloor(floorNumber) {
+function selectFloor(floorNumber, button) {
     currentFloor = floorNumber;
-    
-    // 층 버튼 활성화 상태 업데이트
-    document.querySelectorAll('.floor-button').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    event.target.classList.add('active');
-    
+    document.querySelectorAll('.floor-button').forEach(btn => btn.classList.remove('active'));
+    button.classList.add('active');
+    // 건물명 + 층 정보 갱신
+    const label = document.getElementById('current-floor-label');
+    label.textContent = currentBuilding ? currentBuilding.name + ' ' + floorNumber + '층' : '';
     // 해당 층 평면도 로드
     loadFloorPlan(currentBuilding.id, floorNumber);
 }
 
 // 건물 선택으로 돌아가기
 function showBuildingSelection() {
-    buildingButtons.style.display = 'block';
+    buildingButtons.style.display = 'flex'; // gap이 유지되도록
     floorButtons.style.display = 'none';
     currentBuilding = null;
     currentFloor = 1;
@@ -130,6 +129,8 @@ async function loadFloorPlan(buildingId, floorNumber) {
         if (data.imagePath) {
             // 업로드된 평면도 이미지 표시
             mapImage.innerHTML = `<img src="/uploads/${data.imagePath}" alt="${currentBuilding.name} ${floorNumber}층 평면도">`;
+            // 쓰레기통 마커 로드
+            loadTrashBins(buildingId, floorNumber);
         } else {
             // 기본 평면도 표시 (업로드된 이미지가 없는 경우)
             showDefaultFloorPlan(buildingId, floorNumber);
@@ -142,6 +143,54 @@ async function loadFloorPlan(buildingId, floorNumber) {
         console.error('평면도를 불러오는데 실패했습니다:', error);
         showError('평면도를 불러오는데 실패했습니다.');
     }
+}
+
+// 쓰레기통 목록 로드 (메인 페이지용)
+async function loadTrashBins(buildingId, floorNumber) {
+    try {
+        const response = await fetch(`/api/trash-bins/${buildingId}/${floorNumber}`);
+        const trashBins = await response.json();
+        renderTrashMarkers(trashBins);
+    } catch (error) {
+        console.error('쓰레기통 목록을 불러오는데 실패했습니다:', error);
+    }
+}
+
+// 쓰레기통 마커 렌더링 (메인 페이지용)
+function renderTrashMarkers(trashBins) {
+    // 기존 마커 제거
+    document.querySelectorAll('.trash-marker').forEach(marker => marker.remove());
+    
+    trashBins.forEach(bin => {
+        const marker = document.createElement('div');
+        marker.className = 'trash-marker';
+        marker.style.left = `${bin.x_position}%`;
+        marker.style.top = `${bin.y_position}%`;
+        marker.dataset.binId = bin.id;
+        
+        marker.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showTrashInfo(bin);
+        });
+        
+        mapImage.appendChild(marker);
+    });
+}
+
+// 쓰레기통 정보 표시 (메인 페이지용)
+function showTrashInfo(bin) {
+    const infoPanel = document.getElementById('location-description');
+    let info = `쓰레기통 #${bin.id}`;
+    
+    if (bin.description) {
+        info += ` - ${bin.description}`;
+    }
+    
+    if (bin.image_path) {
+        info += ` (이미지 있음)`;
+    }
+    
+    infoPanel.textContent = info;
 }
 
 // 기본 평면도 표시 (업로드된 이미지가 없는 경우)
@@ -157,17 +206,41 @@ function showDefaultFloorPlan(buildingId, floorNumber) {
 }
 
 // 기본 지도 표시 (전체 캠퍼스)
-function showDefaultMap() {
-    mapImage.innerHTML = `
-        <div class="placeholder">
-            <h3>전체 캠퍼스</h3>
-            <p>정보관, 본관, 신관, 체육관, 운동장</p>
-            <p>왼쪽에서 건물을 선택해주세요</p>
-        </div>
-    `;
-    
-    currentLocation.textContent = '현재 위치: 전체 캠퍼스';
-    locationDescription.textContent = '학교 전체 평면도를 확인할 수 있습니다.';
+async function showDefaultMap() {
+    try {
+        const response = await fetch('/api/floor-plan/0/0');
+        const data = await response.json();
+        
+        if (data.imagePath) {
+            // 업로드된 전체 캠퍼스 평면도 이미지 표시
+            mapImage.innerHTML = `<img src="/uploads/${data.imagePath}" alt="전체 캠퍼스 평면도">`;
+        } else {
+            // 기본 평면도 표시 (업로드된 이미지가 없는 경우)
+            mapImage.innerHTML = `
+                <div class="placeholder">
+                    <h3>전체 캠퍼스</h3>
+                    <p>정보관, 본관, 신관, 체육관, 운동장</p>
+                    <p>왼쪽에서 건물을 선택해주세요</p>
+                </div>
+            `;
+        }
+        
+        currentLocation.textContent = '현재 위치: 전체 캠퍼스';
+        locationDescription.textContent = '학교 전체 평면도를 확인할 수 있습니다.';
+        
+    } catch (error) {
+        console.error('전체 캠퍼스 평면도를 불러오는데 실패했습니다:', error);
+        mapImage.innerHTML = `
+            <div class="placeholder">
+                <h3>전체 캠퍼스</h3>
+                <p>정보관, 본관, 신관, 체육관, 운동장</p>
+                <p>왼쪽에서 건물을 선택해주세요</p>
+            </div>
+        `;
+        
+        currentLocation.textContent = '현재 위치: 전체 캠퍼스';
+        locationDescription.textContent = '학교 전체 평면도를 확인할 수 있습니다.';
+    }
 }
 
 // 위치 정보 업데이트
@@ -185,6 +258,68 @@ function showError(message) {
             <p>${message}</p>
         </div>
     `;
+}
+
+// 로그인 상태 확인
+async function checkLoginStatus() {
+    try {
+        const response = await fetch('/api/session');
+        const data = await response.json();
+        
+        if (data.success) {
+            currentUser = data.user;
+            updateLoginUI(true);
+        } else {
+            updateLoginUI(false);
+        }
+    } catch (error) {
+        console.error('로그인 상태 확인 실패:', error);
+        updateLoginUI(false);
+    }
+}
+
+// 로그인 UI 업데이트
+function updateLoginUI(isLoggedIn) {
+    const loginContainer = document.getElementById('login-button-container');
+    
+    if (isLoggedIn) {
+        loginContainer.innerHTML = `
+            <div class="user-info-sidebar">
+                <div class="user-buttons">
+                    ${currentUser.username === 'admin' ? 
+                        '<button onclick="window.location.href=\'/admin\'" class="admin-sidebar-button">관리자 페이지</button>' : 
+                        ''
+                    }
+                    <button onclick="handleLogout()" class="logout-sidebar-button">로그아웃</button>
+                </div>
+            </div>
+        `;
+    } else {
+        loginContainer.innerHTML = `
+            <button onclick="window.location.href='/login'" class="login-sidebar-button">로그인 / 회원가입</button>
+        `;
+    }
+}
+
+// 로그아웃 처리
+async function handleLogout() {
+    try {
+        const response = await fetch('/api/logout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            currentUser = null;
+            updateLoginUI(false);
+        } else {
+            console.error('로그아웃 실패:', data.error);
+        }
+    } catch (error) {
+        console.error('로그아웃 실패:', error);
+    }
 }
 
 // 페이지 로드 시 기본 지도 표시

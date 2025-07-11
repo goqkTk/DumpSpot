@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>로그인</title>
+  <link rel="stylesheet" href="/css/login.css">
+</head>
+<body>
+  <div class="container">
+    <div class="tabs">
+      <button class="tab active" id="loginTab" onclick="showTab('login')">로그인</button>
+      <button class="tab" id="registerTab" onclick="showTab('register')">회원가입</button>
+    </div>
+    <div id="msg" class="msg"></div>
+    <form id="loginForm" class="form active" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <input type="text" id="login-username" placeholder="아이디" autocomplete="off" required>
+      </div>
+      <div class="form-group">
+        <input type="password" id="login-password" placeholder="비밀번호" required>
+      </div>
+      <button type="submit" class="submit-btn">로그인</button>
+    </form>
+    <form id="registerForm" class="form" onsubmit="handleRegister(event)">
+      <div class="form-group">
+        <input type="text" id="register-username" placeholder="아이디" autocomplete="off" required>
+      </div>
+      <div class="form-group">
+        <input type="password" id="register-password" placeholder="비밀번호" required>
+      </div>
+      <div class="form-group">
+        <input type="password" id="register-password-confirm" placeholder="비밀번호 확인" required>
+      </div>
+      <button type="submit" class="submit-btn">회원가입</button>
+    </form>
+  </div>
+
+  <script src="/js/login.js"></script>
+</body>
+</html>
