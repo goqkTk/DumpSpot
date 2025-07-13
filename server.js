@@ -9,7 +9,10 @@ const bcrypt = require('bcrypt');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 보안 헤더 설정
+// 환경 설정
+const isProduction = process.env.NODE_ENV === 'production';
+
+// 보안 헤더 설정 (HTTP 전용)
 app.use((req, res, next) => {
   // XSS 방지
   res.setHeader('X-XSS-Protection', '1; mode=block');
@@ -17,10 +20,7 @@ app.use((req, res, next) => {
   res.setHeader('X-Frame-Options', 'DENY');
   // MIME 타입 스니핑 방지
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  // HTTPS 강제 (프로덕션에서)
-  if (process.env.NODE_ENV === 'production') {
-    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-  }
+  
   next();
 });
 
@@ -167,6 +167,8 @@ const upload = multer({
     cb(null, true);
   }
 });
+
+
 
 // 라우트
 app.get('/', (req, res) => {
@@ -494,6 +496,17 @@ app.delete('/api/trash-bins/:id', (req, res) => {
       });
     }
   );
+});
+
+// 404 에러 핸들링
+app.use((req, res) => {
+  res.status(404).json({ error: '페이지를 찾을 수 없습니다.' });
+});
+
+// 전역 에러 핸들링
+app.use((err, req, res, next) => {
+  console.error('서버 에러:', err);
+  res.status(500).json({ error: '서버 내부 오류가 발생했습니다.' });
 });
 
 // 서버 시작
