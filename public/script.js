@@ -187,16 +187,16 @@ function escapeHtml(text) {
 // 쓰레기통 정보 표시 (메인 페이지용)
 function showTrashInfo(bin) {
     const infoPanel = document.getElementById('location-description');
-    let info = `<strong>쓰레기통 #${bin.id}</strong>`;
+    let info = `<strong>쓰레기통 #${escapeHtml(bin.id.toString())}</strong>`;
     
     if (bin.description) {
-        const escapedDescription = escapeHtml(bin.description);
-        info += `<br><span class="trash-description">${escapedDescription}</span>`;
+        info += `<br><span class="trash-description">${escapeHtml(bin.description)}</span>`;
     }
     
     if (bin.image_path) {
+        // 파일 경로도 이스케이프 처리
         const escapedImagePath = escapeHtml(bin.image_path);
-        info += `<br><div class="trash-image-container"><img src="/uploads/${escapedImagePath}" alt="쓰레기통 이미지" class="trash-image"></div>`;
+        info += `<br><div class="trash-image-container"><img src="/uploads/${escapedImagePath}" alt="쓰레기통 이미지" class="trash-image" onerror="this.style.display='none'"></div>`;
     }
     
     infoPanel.innerHTML = info;

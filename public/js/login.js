@@ -43,33 +43,11 @@ async function handleLogin(e) {
   }
 }
 
-// 입력 검증 함수
-function validateUsername(username) {
-  const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
-  return usernameRegex.test(username);
-}
-
-function validatePassword(password) {
-  return password.length >= 6 && password.length <= 100;
-}
-
 async function handleRegister(e) {
   e.preventDefault();
   const username = document.getElementById('register-username').value;
   const password = document.getElementById('register-password').value;
   const passwordConfirm = document.getElementById('register-password-confirm').value;
-  
-  // 입력 검증
-  if (!validateUsername(username)) {
-    showMsg('아이디는 3-20자의 영문, 숫자, 언더스코어만 사용 가능합니다.', false);
-    return;
-  }
-  
-  if (!validatePassword(password)) {
-    showMsg('비밀번호는 6-100자여야 합니다.', false);
-    return;
-  }
-  
   if (password !== passwordConfirm) {
     showMsg('비밀번호가 일치하지 않습니다.', false);
     return;
