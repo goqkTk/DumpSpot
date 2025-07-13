@@ -187,16 +187,16 @@ function escapeHtml(text) {
 // 쓰레기통 정보 표시 (메인 페이지용)
 function showTrashInfo(bin) {
     const infoPanel = document.getElementById('location-description');
-    let info = `<strong>쓰레기통 #${escapeHtml(bin.id.toString())}</strong>`;
+    let info = `<strong>쓰레기통 #${bin.id}</strong>`;
     
     if (bin.description) {
-        info += `<br><span class="trash-description">${escapeHtml(bin.description)}</span>`;
+        const escapedDescription = escapeHtml(bin.description);
+        info += `<br><span class="trash-description">${escapedDescription}</span>`;
     }
     
     if (bin.image_path) {
-        // 파일 경로도 이스케이프 처리
         const escapedImagePath = escapeHtml(bin.image_path);
-        info += `<br><div class="trash-image-container"><img src="/uploads/${escapedImagePath}" alt="쓰레기통 이미지" class="trash-image" onerror="this.style.display='none'"></div>`;
+        info += `<br><div class="trash-image-container"><img src="/uploads/${escapedImagePath}" alt="쓰레기통 이미지" class="trash-image"></div>`;
     }
     
     infoPanel.innerHTML = info;
@@ -295,17 +295,30 @@ function updateLoginUI(isLoggedIn) {
             <div class="user-info-sidebar">
                 <div class="user-buttons">
                     ${currentUser.username === 'admin' ? 
-                        '<button onclick="window.location.href=\'/admin\'" class="admin-sidebar-button">관리자 페이지</button>' : 
+                        '<button id="admin-button" class="admin-sidebar-button">관리자 페이지</button>' : 
                         ''
                     }
-                    <button onclick="handleLogout()" class="logout-sidebar-button">로그아웃</button>
+                    <button id="logout-button" class="logout-sidebar-button">로그아웃</button>
                 </div>
             </div>
         `;
+        
+        // 이벤트 리스너 추가
+        if (currentUser.username === 'admin') {
+            document.getElementById('admin-button').addEventListener('click', () => {
+                window.location.href = '/admin';
+            });
+        }
+        document.getElementById('logout-button').addEventListener('click', handleLogout);
     } else {
         loginContainer.innerHTML = `
-            <button onclick="window.location.href='/login'" class="login-sidebar-button">로그인 / 회원가입</button>
+            <button id="login-button" class="login-sidebar-button">로그인 / 회원가입</button>
         `;
+        
+        // 로그인 버튼 이벤트 리스너
+        document.getElementById('login-button').addEventListener('click', () => {
+            window.location.href = '/login';
+        });
     }
 }
 

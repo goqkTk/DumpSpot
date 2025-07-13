@@ -1,3 +1,14 @@
+// 페이지 로드 시 이벤트 리스너 설정
+document.addEventListener('DOMContentLoaded', function() {
+  // 탭 버튼 이벤트 리스너
+  document.getElementById('loginTab').addEventListener('click', () => showTab('login'));
+  document.getElementById('registerTab').addEventListener('click', () => showTab('register'));
+  
+  // 폼 제출 이벤트 리스너
+  document.getElementById('loginForm').addEventListener('submit', handleLogin);
+  document.getElementById('registerForm').addEventListener('submit', handleRegister);
+});
+
 function showTab(tab) {
   document.getElementById('loginTab').classList.toggle('active', tab === 'login');
   document.getElementById('registerTab').classList.toggle('active', tab === 'register');
@@ -43,11 +54,14 @@ async function handleLogin(e) {
   }
 }
 
+
+
 async function handleRegister(e) {
   e.preventDefault();
   const username = document.getElementById('register-username').value;
   const password = document.getElementById('register-password').value;
   const passwordConfirm = document.getElementById('register-password-confirm').value;
+  
   if (password !== passwordConfirm) {
     showMsg('비밀번호가 일치하지 않습니다.', false);
     return;

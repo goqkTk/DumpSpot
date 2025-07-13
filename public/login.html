@@ -9,11 +9,11 @@
 <body>
   <div class="container">
     <div class="tabs">
-      <button class="tab active" id="loginTab" onclick="showTab('login')">로그인</button>
-      <button class="tab" id="registerTab" onclick="showTab('register')">회원가입</button>
+      <button class="tab active" id="loginTab">로그인</button>
+      <button class="tab" id="registerTab">회원가입</button>
     </div>
     <div id="msg" class="msg"></div>
-    <form id="loginForm" class="form active" onsubmit="handleLogin(event)">
+    <form id="loginForm" class="form active">
       <div class="form-group">
         <input type="text" id="login-username" placeholder="아이디" autocomplete="off" required>
       </div>
@@ -22,7 +22,7 @@
       </div>
       <button type="submit" class="submit-btn">로그인</button>
     </form>
-    <form id="registerForm" class="form" onsubmit="handleRegister(event)">
+    <form id="registerForm" class="form">
       <div class="form-group">
         <input type="text" id="register-username" placeholder="아이디" autocomplete="off" required>
       </div>
