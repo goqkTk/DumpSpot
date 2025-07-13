@@ -10,18 +10,6 @@ const helmet = require('helmet');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 보안 미들웨어 설정
-app.use(helmet());
-app.use(helmet.contentSecurityPolicy({
-  directives: {
-    defaultSrc: ["'self'"],
-    styleSrc: ["'self'", "'unsafe-inline'"],
-    scriptSrc: ["'self'"],
-    imgSrc: ["'self'", "data:", "blob:"],
-    connectSrc: ["'self'"]
-  }
-}));
-
 // 미들웨어 설정
 app.use(express.json());
 app.use(express.static('public'));
