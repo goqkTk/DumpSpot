@@ -481,17 +481,29 @@ async function addTrashBin(x, y) {
     }
 }
 
+// HTML 이스케이프 함수
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // 쓰레기통 모달 표시
 function showTrashModal(bin) {
     const modal = document.createElement('div');
     modal.className = 'trash-modal';
+    
+    const escapedDescription = bin.description ? escapeHtml(bin.description) : '';
+    const escapedImagePath = bin.image_path ? escapeHtml(bin.image_path) : '';
+    const escapedBuildingName = escapeHtml(selectedTrashBuilding.name);
+    
     modal.innerHTML = `
         <div class="trash-modal-content">
             <button class="trash-modal-close">&times;</button>
             <h3>쓰레기통 #${bin.id}</h3>
-            ${bin.image_path ? `<img src="/uploads/${bin.image_path}" alt="쓰레기통 이미지">` : ''}
-            ${bin.description ? `<p><strong>설명:</strong> ${bin.description}</p>` : ''}
-            <p><strong>위치:</strong> ${selectedTrashBuilding.name} ${selectedTrashFloor}층</p>
+            ${escapedImagePath ? `<img src="/uploads/${escapedImagePath}" alt="쓰레기통 이미지">` : ''}
+            ${escapedDescription ? `<p><strong>설명:</strong> ${escapedDescription}</p>` : ''}
+            <p><strong>위치:</strong> ${escapedBuildingName} ${selectedTrashFloor}층</p>
             <button class="delete-trash-btn" onclick="deleteTrashBin(${bin.id})">삭제</button>
         </div>
     `;
@@ -545,6 +557,16 @@ function showStatus(message, type) {
     }, 5000);
 }
 
+// 입력 검증 함수
+function validateUsername(username) {
+    const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+    return usernameRegex.test(username);
+}
+
+function validateDescription(description) {
+    return !description || description.length <= 500;
+}
+
 // 파일 선택 시 미리보기 (선택사항)
 imageFile.addEventListener('change', function(event) {
     const file = event.target.files[0];
@@ -565,5 +587,38 @@ imageFile.addEventListener('change', function(event) {
         }
         
         showStatus(`파일이 선택되었습니다: ${file.name}`, 'success');
+    }
+});
+
+// 쓰레기통 이미지 파일 검증
+trashImageFile.addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (file) {
+        // 파일 크기 확인 (5MB 제한)
+        if (file.size > 5 * 1024 * 1024) {
+            showStatus('파일 크기는 5MB 이하여야 합니다.', 'error');
+            this.value = '';
+            return;
+        }
+        
+        // 파일 형식 확인
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        if (!allowedTypes.includes(file.type)) {
+            showStatus('이미지 파일만 업로드 가능합니다.', 'error');
+            this.value = '';
+            return;
+        }
+        
+        showStatus(`쓰레기통 이미지가 선택되었습니다: ${file.name}`, 'success');
+    }
+});
+
+// 쓰레기통 설명 검증
+trashDescription.addEventListener('input', function(event) {
+    const description = event.target.value;
+    if (!validateDescription(description)) {
+        this.setCustomValidity('설명은 500자 이하여야 합니다.');
+    } else {
+        this.setCustomValidity('');
     }
 }); 

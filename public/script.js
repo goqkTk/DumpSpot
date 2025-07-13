@@ -177,20 +177,29 @@ function renderTrashMarkers(trashBins) {
     });
 }
 
+// HTML 이스케이프 함수
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // 쓰레기통 정보 표시 (메인 페이지용)
 function showTrashInfo(bin) {
     const infoPanel = document.getElementById('location-description');
-    let info = `쓰레기통 #${bin.id}`;
+    let info = `<strong>쓰레기통 #${bin.id}</strong>`;
     
     if (bin.description) {
-        info += ` - ${bin.description}`;
+        const escapedDescription = escapeHtml(bin.description);
+        info += `<br><span class="trash-description">${escapedDescription}</span>`;
     }
     
     if (bin.image_path) {
-        info += ` (이미지 있음)`;
+        const escapedImagePath = escapeHtml(bin.image_path);
+        info += `<br><div class="trash-image-container"><img src="/uploads/${escapedImagePath}" alt="쓰레기통 이미지" class="trash-image"></div>`;
     }
     
-    infoPanel.textContent = info;
+    infoPanel.innerHTML = info;
 }
 
 // 기본 평면도 표시 (업로드된 이미지가 없는 경우)
@@ -200,7 +209,6 @@ function showDefaultFloorPlan(buildingId, floorNumber) {
         <div class="placeholder">
             <h3>${building.name} ${floorNumber}층</h3>
             <p>평면도 이미지가 업로드되지 않았습니다.</p>
-            <p>관리자 페이지에서 평면도를 업로드해주세요.</p>
         </div>
     `;
 }
@@ -247,7 +255,7 @@ async function showDefaultMap() {
 function updateLocationInfo(buildingId, floorNumber) {
     const building = buildings.find(b => b.id == buildingId);
     currentLocation.textContent = `현재 위치: ${building.name} ${floorNumber}층`;
-    locationDescription.textContent = `${building.name} ${floorNumber}층의 평면도를 확인할 수 있습니다.`;
+    locationDescription.textContent = `${building.name} ${floorNumber}층의 쓰레기통 위치를 확인할 수 있습니다.`;
 }
 
 // 에러 메시지 표시
